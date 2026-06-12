@@ -2,8 +2,8 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hành Trình Hạ Long 2026 - V9</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hành Trình Hạ Long 2026 - V9.1</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
@@ -17,6 +17,9 @@
             --dark: #0f172a;
             --glass: rgba(255, 255, 255, 0.15);
             --glass-border: rgba(255, 255, 255, 0.2);
+            /* Tông màu Mèo Trợ Lý */
+            --cute-pink-1: #ff758c;
+            --cute-pink-2: #ff7eb3;
         }
 
         body, html {
@@ -56,7 +59,10 @@
         }
         .floating-btn:hover { transform: scale(1.1); }
         .map-btn { bottom: 30px; left: 30px; background: var(--dark); }
-        .chat-btn { bottom: 30px; right: 30px; background: linear-gradient(135deg, #8b5cf6, #ec4899); }
+        
+        /* 💖 Thay đổi thiết kế nút Mèo Trợ Lý */
+        .chat-btn { bottom: 30px; right: 30px; background: linear-gradient(135deg, var(--cute-pink-1), var(--cute-pink-2)); box-shadow: 0 10px 25px rgba(255, 117, 140, 0.4); font-size: 30px;}
+        
         .bag-btn { top: 30px; right: 30px; background: var(--warning); }
         .bg-btn { top: 30px; left: 30px; background: rgba(0,0,0,0.6); font-size: 16px; width: auto; padding: 0 20px; border-radius: 30px;}
 
@@ -84,7 +90,7 @@
         .video-only-mode .video-info { display: none; }
         .video-only-mode .video-player { flex: 1; }
 
-        /* 📱 TIKTOK MOBILE FULLSCREEN STYLING */
+        /* 📱 TIKTOK MOBILE FULLSCREEN STYLING - ĐÃ VÁ LỖI MẤT NÚT DƯỚI ĐÁY */
         @media (max-width: 768px) {
             .video-modal-content {
                 width: 100vw;
@@ -104,20 +110,21 @@
                 bottom: 0;
                 left: 0;
                 width: 100%;
-                background: linear-gradient(transparent, rgba(0,0,0,0.9));
+                /* BẢN VÁ: Gradient tối hơn để dễ đọc chữ */
+                background: linear-gradient(transparent, rgba(0,0,0,0.95) 15%, #000000);
                 color: white;
                 z-index: 20;
                 padding: 20px;
                 padding-top: 40px;
-                max-height: 50vh;
+                max-height: 55vh;
                 overflow-y: auto;
+                /* BẢN VÁ: Đẩy khoảng đệm đáy lên để không bị khuất nút Check-in */
+                padding-bottom: 80px; 
             }
-            /* Style lại text cho nổi trên nền tối */
             .video-info h2 { color: white !important; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
             .video-info p { color: #e2e8f0 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
             .video-info .btn-glass { background: rgba(255,255,255,0.2) !important; color: white !important; border: 1px solid rgba(255,255,255,0.5) !important; }
             
-            /* Nút đóng nổi lên góc màn hình */
             .video-modal-content .close-btn-red {
                 top: 15px;
                 left: 15px;
@@ -136,13 +143,23 @@
         .side-panel.active { display: flex; transform: translateY(0); opacity: 1; }
         .side-panel-bag { right: 30px; top: 100px; bottom: auto; height: 420px; }
         .panel-header { background: var(--primary); color: white; padding: 15px; font-weight: bold; text-align: center; }
+        
+        /* 💖 Giao diện header Mèo Trợ Lý */
+        .chat-header-cute { background: linear-gradient(135deg, var(--cute-pink-1), var(--cute-pink-2)) !important; }
+
         .panel-body { flex: 1; padding: 15px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 10px;}
         .chat-input { display: flex; padding: 10px; background: white; border-top: 1px solid #eee; }
         .chat-input input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 10px; outline: none; }
         .chat-input button { background: var(--primary); color: white; border: none; width: 40px; border-radius: 10px; margin-left: 10px; cursor: pointer; }
+        
+        /* 💖 Nút gửi Chatbot Cute */
+        .btn-send-cute { background: var(--cute-pink-1) !important; font-size: 16px;}
+
         .msg { max-width: 85%; padding: 10px 14px; border-radius: 15px; font-size: 14px; line-height: 1.4; }
         .msg-bot { background: white; border-bottom-left-radius: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .msg-user { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        
+        /* 💖 Bong bóng thoại User Cute */
+        .msg-user { background: linear-gradient(135deg, var(--cute-pink-1), var(--cute-pink-2)); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
         
         /* 🎒 TÚI VIDEO CẢI TIẾN */
         .bag-item { 
@@ -197,7 +214,7 @@
     
     <div class="floating-btn bag-btn" onclick="toggleBag()">🎒 <span id="bagCount" style="font-size: 12px; position:absolute; top:-5px; right:-5px; background:red; border-radius:50%; width:20px; height:20px; display:flex; justify-content:center; align-items:center; color:white; font-weight:bold;">0</span></div>
     <div class="floating-btn map-btn" onclick="toggleMapModal()">🗺️</div>
-    <div class="floating-btn chat-btn" onclick="toggleChat()">🤖</div>
+    <div class="floating-btn chat-btn" onclick="toggleChat()">🐱</div>
 
     <div class="side-panel side-panel-bag" id="bagPanel">
         <div class="panel-header" style="background:var(--warning);">🎒 Túi Video Của Bạn</div>
@@ -212,13 +229,13 @@
     </div>
 
     <div class="side-panel" id="chatPanel">
-        <div class="panel-header">🤖 HaLong AI Assistant</div>
+        <div class="panel-header chat-header-cute">🐱 Mèo Trợ Lý Hạ Long</div>
         <div class="panel-body" id="chatBody">
-            <div class="msg msg-bot">👋 Chào sếp! Gõ <b>"Thêm điểm"</b> để tạo mới, hoặc <b>"Sửa [Số]"</b> (vd: Sửa 1) để cập nhật lịch trình nhé!</div>
+            <div class="msg msg-bot">🐱 Chào sếp! Gõ <b>"Thêm điểm"</b> để tạo mới, hoặc <b>"Sửa [Số]"</b> (vd: Sửa 1) để cập nhật lịch trình nhé!</div>
         </div>
         <div class="chat-input">
-            <input type="text" id="chatInput" placeholder="Nhập lệnh..." onkeypress="if(event.key==='Enter') processChat()">
-            <button onclick="processChat()">➤</button>
+            <input type="text" id="chatInput" placeholder="Nhắn tin cho Mèo..." onkeypress="if(event.key==='Enter') processChat()">
+            <button class="btn-send-cute" onclick="processChat()">➤</button>
         </div>
     </div>
 
@@ -345,15 +362,13 @@
             document.body.style.backgroundImage = `url(${img})`;
             localStorage.setItem("halong_bg", img);
             cropModal.classList.remove("active");
-            bgUpload.value = ''; // Reset input
+            bgUpload.value = ''; 
         }
 
-        // --- APPLE SCROLL ---
         const observer = new IntersectionObserver((e) => { e.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('visible'); else entry.target.classList.remove('visible'); }); }, { threshold: 0.1 });
         
         // --- TÚI VIDEO NÂNG CẤP ĐẶT TÊN ---
         let videoBag = JSON.parse(localStorage.getItem('halong_bag')) || [];
-        // Chuyển đổi dữ liệu cũ nếu trước đó chỉ lưu string URL
         videoBag = videoBag.map(item => typeof item === 'string' ? {name: 'Video Lịch Trình', url: item} : item);
 
         function toggleBag() { document.getElementById('bagPanel').classList.toggle('active'); renderBag(); }
@@ -446,17 +461,27 @@
             locations.forEach(loc => { L.marker([loc.lat, loc.lng]).addTo(markersLayer).bindPopup(`<b>${loc.name}</b><br>${loc.time}`); });
         }
 
-        // --- BỘ GIẢI MÃ VIDEO (NÂNG CẤP TIKTOK /PLAYER/V1/) ---
+        // --- BỘ GIẢI MÃ VIDEO (VÁ LỖI LINK NGẮN TIKTOK ĐIỆN THOẠI) ---
         function getEmbedCode(url) {
-            if (!url) return "<p style='color:white;'>Không có video</p>";
-            // Xử lý TikTok Fullscreen Player
+            if (!url) return "<p style='color:white; text-align:center; padding-top:20px;'>Không có video</p>";
+            
             if (url.includes('tiktok.com')) {
+                // Xử lý link rút gọn từ điện thoại
+                if (url.includes('vt.tiktok') || url.includes('vm.tiktok')) {
+                    return `
+                    <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; padding:20px; text-align:center; background:#111; width:100%;">
+                        <span style="font-size:40px; margin-bottom:10px;">⚠️</span>
+                        <h3 style="color:#f59e0b; margin:0 0 10px 0;">Link Rút Gọn Điện Thoại</h3>
+                        <p style="color:#e2e8f0; font-size:13px; line-height:1.5;">Do bảo mật trình duyệt, hệ thống không thể tự bóc tách ID từ link ngắn.<br><br><b>Khắc phục:</b> Hãy mở link này bằng Safari/Chrome, copy lại đường link dài trên thanh địa chỉ (có chứa chữ /video/...) rồi dán vào đây nhé!</p>
+                    </div>`;
+                }
                 const ttMatch = url.match(/video\/(\d+)/);
-                return `<iframe src="https://www.tiktok.com/player/v1/${ttMatch ? ttMatch[1] : ''}?autoplay=1" allowfullscreen scrolling="no"></iframe>`;
+                return `<iframe src="https://www.tiktok.com/player/v1/${ttMatch ? ttMatch[1] : ''}?autoplay=1" allowfullscreen scrolling="no" style="width:100%; height:100%; border:none;"></iframe>`;
             }
             const ytMatch = url.match(/(?:youtube\.com.*[?&]v=|youtu\.be\/)([^&]+)/);
-            if (ytMatch) return `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1" allowfullscreen scrolling="no"></iframe>`;
-            return `<iframe src="${url}" allowfullscreen scrolling="no"></iframe>`;
+            if (ytMatch) return `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1" allowfullscreen scrolling="no" style="width:100%; height:100%; border:none;"></iframe>`;
+            
+            return `<iframe src="${url}" allowfullscreen scrolling="no" style="width:100%; height:100%; border:none;"></iframe>`;
         }
 
         function openVideoModal(id, rawUrl = null) {
@@ -483,7 +508,7 @@
         function previewVideoBag(url) { openVideoModal(null, url); }
         function closeVideoModal() { document.getElementById('videoModal').classList.remove('active'); document.getElementById('modalVidContainer').innerHTML = ''; }
 
-        // --- NÃO BỘ CHATBOT KẾT NỐI TÚI ---
+        // --- NÃO BỘ CHATBOT KẾT NỐI TÚI (CUTE ASSISTANT) ---
         function toggleChat() { document.getElementById('chatPanel').classList.toggle('active'); }
         const chatBody = document.getElementById('chatBody'), chatInput = document.getElementById('chatInput');
         let chatState = "idle", tempLoc = {}, editId = null;
@@ -501,19 +526,19 @@
                     let idx = parseInt(matchEdit[1]) - 1;
                     if(locations[idx]) {
                         editId = locations[idx].id;
-                        msg(`🤖 Đang sửa: <b>${locations[idx].name}</b>. Gõ mục cần sửa (<b>Tên / Tọa độ / Giờ / Video</b>) hoặc <b>Xong</b>.`, 'bot');
+                        msg(`🐱 Meo! Đang sửa: <b>${locations[idx].name}</b>. Gõ mục cần sửa (<b>Tên / Tọa độ / Giờ / Video</b>) hoặc <b>Xong</b> nha sếp!`, 'bot');
                         chatState = "edit_pick_field";
-                    } else msg("🤖 Số không đúng!", 'bot');
+                    } else msg("🐱 Meo, số thẻ không đúng rồi sếp ơi!", 'bot');
                     return;
                 }
 
                 if (chatState === "edit_pick_field") {
-                    if (low === 'xong') { chatState = "idle"; editId = null; msg("🤖 Đã lưu hoàn tất!", 'bot'); } 
-                    else if (low.includes('tên')) { chatState = "edit_val_name"; msg("🤖 Sếp nhập Tên mới:", 'bot'); } 
-                    else if (low.includes('tọa độ') || low.includes('map')) { chatState = "edit_val_coord"; msg("🤖 Dán Vĩ độ, Kinh độ (VD: 20.95, 106.99):", 'bot'); } 
-                    else if (low.includes('giờ') || low.includes('ngày') || low.includes('thời gian')) { chatState = "edit_val_time"; msg("🤖 Nhập Lịch mới (VD: Ngày 2 - 08:00):", 'bot'); } 
-                    else if (low.includes('video') || low.includes('link')) { chatState = "edit_val_video"; msg("🤖 Dán Link hoặc gõ 'Túi số 1':", 'bot'); } 
-                    else msg("🤖 Em chưa hiểu. Sếp gõ (<b>Tên/Tọa độ/Giờ/Video</b>) hoặc <b>Xong</b> nhé.", 'bot');
+                    if (low === 'xong') { chatState = "idle"; editId = null; msg("🐱 Mèo đã lưu hoàn tất!", 'bot'); } 
+                    else if (low.includes('tên')) { chatState = "edit_val_name"; msg("🐱 Sếp nhập Tên mới cho điểm đến nha:", 'bot'); } 
+                    else if (low.includes('tọa độ') || low.includes('map')) { chatState = "edit_val_coord"; msg("🐱 Sếp dán Vĩ độ, Kinh độ (VD: 20.95, 106.99) vào đây:", 'bot'); } 
+                    else if (low.includes('giờ') || low.includes('ngày') || low.includes('thời gian')) { chatState = "edit_val_time"; msg("🐱 Sếp nhập Lịch trình mới (VD: Ngày 2 - 08:00) nào:", 'bot'); } 
+                    else if (low.includes('video') || low.includes('link')) { chatState = "edit_val_video"; msg("🐱 Sếp dán Link Video hoặc gõ 'Túi số 1' nhé:", 'bot'); } 
+                    else msg("🐱 Mèo chưa hiểu. Sếp gõ (<b>Tên/Tọa độ/Giờ/Video</b>) hoặc gõ <b>Xong</b> nha.", 'bot');
                     return;
                 }
 
@@ -530,28 +555,28 @@
                     if(chatState === "edit_val_coord") {
                         let coords = text.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
                         if(coords) { target.lat = parseFloat(coords[1]); target.lng = parseFloat(coords[2]); }
-                        else { msg("🤖 Tọa độ chưa chuẩn. Cần dấu phẩy (VD: 20.95, 106.99)", 'bot'); return; }
+                        else { msg("🐱 Meo, tọa độ chưa chuẩn. Cần dấu phẩy (VD: 20.95, 106.99) nhé sếp!", 'bot'); return; }
                     }
-                    renderUI(); msg(`🤖 Cập nhật xong! Gõ tiếp mục cần sửa hoặc <b>Xong</b>.`, 'bot'); chatState = "edit_pick_field"; return;
+                    renderUI(); msg(`🐱 Cập nhật xong rồi! Gõ tiếp mục cần sửa hoặc gõ <b>Xong</b> để thoát nha.`, 'bot'); chatState = "edit_pick_field"; return;
                 }
 
-                if (chatState === "idle" && (low.includes('thêm') || low.includes('tạo'))) { msg("🤖 Tên địa điểm mới là gì?", 'bot'); chatState = "add_name"; } 
-                else if (chatState === "add_name") { tempLoc.name = text; msg(`🤖 Tên: <b>${text}</b>. Dự kiến Ngày/Giờ nào?`, 'bot'); chatState = "add_time"; }
-                else if (chatState === "add_time") { tempLoc.time = text; msg(`🤖 Xin Tọa độ (Vĩ độ, Kinh độ) nhé:`, 'bot'); chatState = "add_coord"; }
+                if (chatState === "idle" && (low.includes('thêm') || low.includes('tạo'))) { msg("🐱 Tên địa điểm mới là gì vậy sếp?", 'bot'); chatState = "add_name"; } 
+                else if (chatState === "add_name") { tempLoc.name = text; msg(`🐱 Tên: <b>${text}</b>. Sếp dự kiến đi Ngày/Giờ nào?`, 'bot'); chatState = "add_time"; }
+                else if (chatState === "add_time") { tempLoc.time = text; msg(`🐱 Sếp cho Mèo xin Tọa độ (Vĩ độ, Kinh độ) nhé:`, 'bot'); chatState = "add_coord"; }
                 else if (chatState === "add_coord") {
                     let coords = text.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
-                    if (coords) { tempLoc.lat = parseFloat(coords[1]); tempLoc.lng = parseFloat(coords[2]); msg("🤖 Dán Link Video hoặc gõ <b>'Túi số 1'</b>:", 'bot'); chatState = "add_video"; } 
-                    else msg("🤖 Chưa đúng chuẩn số. VD: 20.95, 106.99", 'bot');
+                    if (coords) { tempLoc.lat = parseFloat(coords[1]); tempLoc.lng = parseFloat(coords[2]); msg("🐱 Dán Link Video hoặc gõ <b>'Túi số 1'</b> vào đây nha:", 'bot'); chatState = "add_video"; } 
+                    else msg("🐱 Mèo chưa nhận diện được số. VD đúng là: 20.95, 106.99", 'bot');
                 } 
                 else if (chatState === "add_video") {
                     if (low.includes('túi số')) { 
                         let idx = parseInt(low.replace(/[^0-9]/g, '')) - 1; 
                         tempLoc.videoUrl = (videoBag[idx] && videoBag[idx].url) ? videoBag[idx].url : "https://youtu.be/jfKfPfyJRdk"; 
                     } else { tempLoc.videoUrl = text; }
-                    tempLoc.id = Date.now().toString(); tempLoc.desc = "Thêm bởi AI Bot."; tempLoc.checkedIn = false;
-                    locations.push(tempLoc); renderUI(); msg(`🤖 Đã tạo xong <b>${tempLoc.name}</b>!`, 'bot'); chatState = "idle"; tempLoc = {};
+                    tempLoc.id = Date.now().toString(); tempLoc.desc = "Thêm bởi Mèo Trợ Lý."; tempLoc.checkedIn = false;
+                    locations.push(tempLoc); renderUI(); msg(`🐱 Xong rồi! Đã tạo <b>${tempLoc.name}</b> thành công!`, 'bot'); chatState = "idle"; tempLoc = {};
                 }
-                else if (chatState === "idle") msg("🤖 Gõ <b>'Thêm điểm'</b> hoặc <b>'Sửa [số]'</b> nhé!", 'bot');
+                else if (chatState === "idle") msg("🐱 Mèo đây! Sếp gõ <b>'Thêm điểm'</b> hoặc <b>'Sửa [số]'</b> để em hỗ trợ nhé!", 'bot');
             }, 400);
         }
 
