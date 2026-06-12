@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hành Trình Hạ Long 2026 - V9</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+    
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #0f172a;
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        body, html {
+            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            scroll-behavior: smooth; color: #1d1d1f; overflow-x: hidden;
+            background-color: #0f172a; background-attachment: fixed; background-position: center; background-size: cover;
+            transition: background-image 0.5s ease;
+        }
+
+        /* --- APPLE SCROLL REVEAL --- */
+        .fade-in-up { opacity: 0; transform: translateY(40px); transition: opacity 0.8s ease, transform 0.8s ease; }
+        .fade-in-up.visible { opacity: 1; transform: translateY(0); }
+
+        /* HERO SECTION */
+        .hero { height: 100vh; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
+        .hero::before { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); z-index: 1;}
+        .hero-content { z-index: 2; }
+        .hero h1 { font-size: 4.5rem; margin-bottom: 10px; font-weight: 700; letter-spacing: -1.5px; text-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .hero p { font-size: 1.5rem; margin-bottom: 30px; font-weight: 300; text-shadow: 0 2px 10px rgba(0,0,0,0.5);}
+        .btn { padding: 14px 28px; border-radius: 30px; font-weight: 600; border: none; cursor: pointer; transition: 0.3s; text-decoration: none; display: inline-block;}
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-glass { background: var(--glass); color: white; border: 1px solid var(--glass-border); backdrop-filter: blur(10px); }
+
+        /* CONTENT SECTIONS */
+        .section { padding: 80px 20px; max-width: 1000px; margin: 0 auto; min-height: 50vh; position: relative; z-index: 2;}
+        .section h2 { font-size: 2.5rem; text-align: center; font-weight: 700; margin-bottom: 50px; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5);}
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+        .card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 24px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); transition: 0.3s; position: relative;}
+        .card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.25); }
+        .btn-delete { position: absolute; top: 15px; right: 15px; background: #fee2e2; color: var(--danger); border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 14px; transition: 0.3s;}
+        .btn-delete:hover { background: var(--danger); color: white; }
+
+        /* FLOATING UI */
+        .floating-btn {
+            position: fixed; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; 
+            font-size: 24px; cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 1000; transition: 0.3s; border: 2px solid var(--glass-border); color: white; backdrop-filter: blur(10px);
+        }
+        .floating-btn:hover { transform: scale(1.1); }
+        .map-btn { bottom: 30px; left: 30px; background: var(--dark); }
+        .chat-btn { bottom: 30px; right: 30px; background: linear-gradient(135deg, #8b5cf6, #ec4899); }
+        .bag-btn { top: 30px; right: 30px; background: var(--warning); }
+        .bg-btn { top: 30px; left: 30px; background: rgba(0,0,0,0.6); font-size: 16px; width: auto; padding: 0 20px; border-radius: 30px;}
+
+        /* BẢN ĐỒ & MODAL */
+        .full-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255,255,255,0.95); backdrop-filter: blur(15px); z-index: 9998; display: none; flex-direction: column; opacity: 0; transition: 0.3s;}
+        .full-modal.active { display: flex; opacity: 1; }
+        .modal-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 2;}
+        .close-btn-red { background: var(--danger); color: white; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        #map { flex: 1; width: 100%; z-index: 1; }
+
+        /* 🎬 MODAL VIDEO CHI TIẾT TỐI ƯU */
+        .video-modal { background: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
+        .video-modal-content { 
+            background: white; width: 90%; max-width: 900px; height: 75vh; border-radius: 24px; 
+            display: flex; overflow: hidden; position: relative; flex-direction: row;
+        }
+        .video-player { 
+            flex: 1.5; background: #000; padding: 0; margin: 0; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; 
+        }
+        .video-player iframe { width: 100%; height: 100%; border: none; pointer-events: auto; }
+        .video-info { flex: 1; padding: 40px; overflow-y: auto; background: #f8fafc;}
+        
+        .video-only-mode .video-info { display: none; }
+        .video-only-mode .video-player { flex: 1; }
+
+        /* 📱 TIKTOK MOBILE FULLSCREEN STYLING */
+        @media (max-width: 768px) {
+            .video-modal-content {
+                width: 100vw;
+                height: 100vh;
+                border-radius: 0;
+                flex-direction: column;
+            }
+            .video-player {
+                width: 100%;
+                height: 100vh;
+                aspect-ratio: auto;
+                background: #000;
+                position: relative;
+            }
+            .video-info {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                background: linear-gradient(transparent, rgba(0,0,0,0.9));
+                color: white;
+                z-index: 20;
+                padding: 20px;
+                padding-top: 40px;
+                max-height: 50vh;
+                overflow-y: auto;
+            }
+            /* Style lại text cho nổi trên nền tối */
+            .video-info h2 { color: white !important; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+            .video-info p { color: #e2e8f0 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+            .video-info .btn-glass { background: rgba(255,255,255,0.2) !important; color: white !important; border: 1px solid rgba(255,255,255,0.5) !important; }
+            
+            /* Nút đóng nổi lên góc màn hình */
+            .video-modal-content .close-btn-red {
+                top: 15px;
+                left: 15px;
+                z-index: 30;
+                background: rgba(239, 68, 68, 0.9);
+                backdrop-filter: blur(5px);
+            }
+            .hero h1 { font-size: 3rem; }
+        }
+
+        /* SIDE PANELS (Chat & Bag) */
+        .side-panel {
+            position: fixed; bottom: 100px; right: 30px; width: 350px; height: 500px; background: white; border-radius: 24px; box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            display: none; flex-direction: column; overflow: hidden; z-index: 1000; border: 1px solid #eee; transform: translateY(20px); opacity: 0; transition: 0.3s;
+        }
+        .side-panel.active { display: flex; transform: translateY(0); opacity: 1; }
+        .side-panel-bag { right: 30px; top: 100px; bottom: auto; height: 420px; }
+        .panel-header { background: var(--primary); color: white; padding: 15px; font-weight: bold; text-align: center; }
+        .panel-body { flex: 1; padding: 15px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 10px;}
+        .chat-input { display: flex; padding: 10px; background: white; border-top: 1px solid #eee; }
+        .chat-input input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 10px; outline: none; }
+        .chat-input button { background: var(--primary); color: white; border: none; width: 40px; border-radius: 10px; margin-left: 10px; cursor: pointer; }
+        .msg { max-width: 85%; padding: 10px 14px; border-radius: 15px; font-size: 14px; line-height: 1.4; }
+        .msg-bot { background: white; border-bottom-left-radius: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .msg-user { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        
+        /* 🎒 TÚI VIDEO CẢI TIẾN */
+        .bag-item { 
+            background: white; padding: 12px; border-radius: 10px; border-left: 4px solid var(--primary); 
+            font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;
+        }
+        .bag-actions { display: flex; gap: 10px; }
+        .btn-bag-action { padding: 8px 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; color: white; transition: 0.2s;}
+        .btn-bag-play { background: var(--success); }
+        .btn-bag-del { background: var(--danger); }
+        .btn-bag-action:active { transform: scale(0.9); }
+
+        /* 🚨 HỆ THỐNG THÔNG BÁO CUSTOM MODAL CHUYÊN NGHIỆP */
+        .custom-alert-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px); z-index: 10000; display: none; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .custom-alert-overlay.active { display: flex; opacity: 1; }
+        .custom-alert-card {
+            background: white; border-radius: 20px; padding: 30px; width: 90%; max-width: 400px;
+            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3); transform: scale(0.9); transition: transform 0.3s ease;
+        }
+        .custom-alert-overlay.active .custom-alert-card { transform: scale(1); }
+        .alert-icon { font-size: 40px; margin-bottom: 15px; }
+        .alert-message { font-size: 16px; font-weight: bold; color: var(--dark); margin-bottom: 20px; line-height: 1.5; }
+        .alert-btn-group { display: flex; gap: 15px; justify-content: center; }
+        .alert-btn { flex: 1; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; transition: 0.2s;}
+        .btn-cancel { background: #f1f5f9; color: #475569; display: none; }
+        .btn-confirm { background: var(--primary); color: white; }
+
+        /* Khung Cắt Ảnh Nền (Crop Modal) */
+        #cropModal { background: rgba(0,0,0,0.95); z-index: 10001; }
+        .crop-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; overflow: hidden; }
+        .crop-container img { max-width: 100%; max-height: 100%; }
+    </style>
+</head>
+<body>
+
+    <div class="hero" id="heroSection">
+        <div class="hero-content">
+            <h1 class="fade-in-up">Khám Phá Hạ Long</h1>
+            <p class="fade-in-up" style="transition-delay: 0.1s;">Trải nghiệm Đẳng cấp. Quản lý Thông minh.</p>
+            <div class="fade-in-up" style="transition-delay: 0.2s;">
+                <a href="#destinations" class="btn btn-primary">Bắt đầu Hành trình</a>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="bgUpload" accept="image/*" style="display:none">
+    <div class="floating-btn bg-btn" onclick="document.getElementById('bgUpload').click()">🖼️ Đổi Nền</div>
+    
+    <div class="floating-btn bag-btn" onclick="toggleBag()">🎒 <span id="bagCount" style="font-size: 12px; position:absolute; top:-5px; right:-5px; background:red; border-radius:50%; width:20px; height:20px; display:flex; justify-content:center; align-items:center; color:white; font-weight:bold;">0</span></div>
+    <div class="floating-btn map-btn" onclick="toggleMapModal()">🗺️</div>
+    <div class="floating-btn chat-btn" onclick="toggleChat()">🤖</div>
+
+    <div class="side-panel side-panel-bag" id="bagPanel">
+        <div class="panel-header" style="background:var(--warning);">🎒 Túi Video Của Bạn</div>
+        <div class="panel-body" id="bagList"></div>
+        <div class="chat-input" style="flex-direction: column; gap: 5px; padding: 15px;">
+            <input type="text" id="bagNameInput" placeholder="Tên túi (VD: Đi biển)..." style="width: 100%; box-sizing: border-box;">
+            <div style="display: flex; width: 100%;">
+                <input type="text" id="bagInput" placeholder="Dán link YT/TikTok..." style="flex: 1;">
+                <button onclick="addVideoToBag()" style="background:var(--warning); margin-left: 5px;">+</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="side-panel" id="chatPanel">
+        <div class="panel-header">🤖 HaLong AI Assistant</div>
+        <div class="panel-body" id="chatBody">
+            <div class="msg msg-bot">👋 Chào sếp! Gõ <b>"Thêm điểm"</b> để tạo mới, hoặc <b>"Sửa [Số]"</b> (vd: Sửa 1) để cập nhật lịch trình nhé!</div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Nhập lệnh..." onkeypress="if(event.key==='Enter') processChat()">
+            <button onclick="processChat()">➤</button>
+        </div>
+    </div>
+
+    <div class="full-modal" id="mapModal">
+        <div class="modal-header">
+            <h2 style="margin:0; color: var(--dark);">🗺️ Bản Đồ Hành Trình</h2>
+            <button class="close-btn-red" onclick="toggleMapModal()">✕ Đóng</button>
+        </div>
+        <div id="map"></div>
+    </div>
+
+    <div class="full-modal" id="cropModal">
+        <div class="modal-header" style="background: #1e293b; color: white; border-bottom: none;">
+            <h3 style="margin:0;">Cắt ảnh nền</h3>
+            <div>
+                <button class="btn btn-glass" onclick="document.getElementById('cropModal').classList.remove('active'); document.getElementById('bgUpload').value='';">Hủy</button>
+                <button class="btn btn-primary" onclick="saveCropBg()">Lưu</button>
+            </div>
+        </div>
+        <div class="crop-container">
+            <img id="cropImage">
+        </div>
+    </div>
+
+    <section id="destinations" class="section">
+        <h2 class="fade-in-up">📍 Điểm Đến Lịch Trình</h2>
+        <div class="grid" id="destList"></div>
+    </section>
+
+    <section id="diary" class="section">
+        <h2 class="fade-in-up">📖 Kỷ Niệm Đã Qua</h2>
+        <div class="grid" id="diaryList"></div>
+    </section>
+
+    <div class="full-modal video-modal" id="videoModal">
+        <div class="video-modal-content" id="modalContentBox">
+            <div class="close-btn-red" style="position: absolute; top: 15px; left: 15px; z-index: 10;" onclick="closeVideoModal()">✕ Đóng</div>
+            <div class="video-player" id="modalVidContainer"></div>
+            <div class="video-info" id="modalInfoBox">
+                <span style="background:#e0f2fe; color:#0ea5e9; padding:5px 12px; border-radius:15px; font-size:12px; font-weight:bold;" id="modalTime"></span>
+                <h2 id="modalTitle" style="margin-top: 15px; color: var(--dark);"></h2>
+                <p id="modalDesc" style="color: #666; line-height: 1.6;"></p>
+                <button class="btn btn-primary" style="width:100%; margin-top:20px;" id="btnMaps">🗺️ Mở Bản Đồ Chỉ Đường</button>
+                <button class="btn btn-glass" style="width:100%; margin-top:10px; color:#333; border: 1px solid #ccc; background:#fff;" id="btnCheckIn">✅ Đánh Dấu Đã Check-in</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-alert-overlay" id="customAlert">
+        <div class="custom-alert-card">
+            <div class="alert-icon" id="alertIcon">⚠️</div>
+            <div class="alert-message" id="alertMessage">Thông báo</div>
+            <div class="alert-btn-group">
+                <button class="alert-btn btn-cancel" id="alertCancelBtn" onclick="closeAlert()">Hủy</button>
+                <button class="alert-btn btn-confirm" id="alertConfirmBtn">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+    <script>
+        // --- CUSTOM ALERT ---
+        let currentAlertCallback = null;
+        function closeAlert() { document.getElementById('customAlert').classList.remove('active'); }
+        function showAlert(msg, type = "confirm", callback = null) {
+            document.getElementById('alertMessage').innerHTML = msg;
+            const cancelBtn = document.getElementById('alertCancelBtn');
+            const confirmBtn = document.getElementById('alertConfirmBtn');
+            
+            currentAlertCallback = callback;
+            if (type === "confirm") {
+                document.getElementById('alertIcon').innerText = "🗑️";
+                cancelBtn.style.display = 'block';
+                confirmBtn.style.background = "var(--danger)";
+            } else {
+                document.getElementById('alertIcon').innerText = "✅";
+                cancelBtn.style.display = 'none';
+                confirmBtn.style.background = "var(--primary)";
+            }
+
+            confirmBtn.onclick = () => {
+                closeAlert();
+                if (currentAlertCallback) currentAlertCallback(true);
+            };
+            document.getElementById('customAlert').classList.add('active');
+        }
+
+        // --- CROPPER NỀN TRANG WEB ---
+        let currentBg = localStorage.getItem('halong_bg') || 'https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=2070';
+        document.body.style.backgroundImage = `url('${currentBg}')`;
+
+        let cropper;
+        const bgUpload = document.getElementById('bgUpload');
+        const cropModal = document.getElementById('cropModal');
+        const cropImage = document.getElementById('cropImage');
+
+        bgUpload.onchange = (e) => {
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(ev){
+                cropModal.classList.add("active");
+                cropImage.src = ev.target.result;
+                setTimeout(() => {
+                    if(cropper) cropper.destroy();
+                    cropper = new Cropper(cropImage, {
+                        aspectRatio: 16/9,
+                        viewMode: 1,
+                        movable: true,
+                        zoomable: true,
+                        scalable: true
+                    });
+                }, 100);
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function saveCropBg(){
+            if(!cropper) return;
+            const canvas = cropper.getCroppedCanvas({ width: 1920, height: 1080 });
+            const img = canvas.toDataURL("image/jpeg");
+            document.body.style.backgroundImage = `url(${img})`;
+            localStorage.setItem("halong_bg", img);
+            cropModal.classList.remove("active");
+            bgUpload.value = ''; // Reset input
+        }
+
+        // --- APPLE SCROLL ---
+        const observer = new IntersectionObserver((e) => { e.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('visible'); else entry.target.classList.remove('visible'); }); }, { threshold: 0.1 });
+        
+        // --- TÚI VIDEO NÂNG CẤP ĐẶT TÊN ---
+        let videoBag = JSON.parse(localStorage.getItem('halong_bag')) || [];
+        // Chuyển đổi dữ liệu cũ nếu trước đó chỉ lưu string URL
+        videoBag = videoBag.map(item => typeof item === 'string' ? {name: 'Video Lịch Trình', url: item} : item);
+
+        function toggleBag() { document.getElementById('bagPanel').classList.toggle('active'); renderBag(); }
+        
+        function renderBag() {
+            document.getElementById('bagCount').innerText = videoBag.length;
+            const list = document.getElementById('bagList');
+            list.innerHTML = videoBag.length === 0 ? '<p style="color:#666; font-size:13px; text-align:center;">Túi đang trống.</p>' : '';
+            videoBag.forEach((vid, idx) => {
+                list.innerHTML += `
+                    <div class="bag-item">
+                        <span style="font-weight: bold; color: var(--primary);">[Túi ${idx + 1}] ${vid.name}</span>
+                        <div class="bag-actions">
+                            <button class="btn-bag-action btn-bag-play" onclick="previewVideoBag('${vid.url}')">▶</button>
+                            <button class="btn-bag-action btn-bag-del" onclick="askDeleteVideo(${idx})">✕</button>
+                        </div>
+                    </div>`;
+            });
+        }
+        function addVideoToBag() {
+            let nameVal = document.getElementById('bagNameInput').value.trim();
+            let urlVal = document.getElementById('bagInput').value.trim();
+            
+            if(!nameVal) nameVal = `Video ${videoBag.length + 1}`;
+            if(urlVal) { 
+                videoBag.push({ name: nameVal, url: urlVal }); 
+                localStorage.setItem('halong_bag', JSON.stringify(videoBag)); 
+                document.getElementById('bagNameInput').value = '';
+                document.getElementById('bagInput').value = ''; 
+                renderBag(); 
+            }
+        }
+        function askDeleteVideo(idx) {
+            showAlert("Bạn chắc chắn muốn xóa video này khỏi túi?", "confirm", () => {
+                videoBag.splice(idx, 1);
+                localStorage.setItem('halong_bag', JSON.stringify(videoBag));
+                renderBag();
+            });
+        }
+        renderBag();
+
+        // --- DỮ LIỆU ĐIỂM ĐẾN ---
+        const defaultData = [
+            { id: "1", name: "Đảo Ti Tốp", lat: 20.8596, lng: 107.0805, time: "Ngày 1 - 14:00", desc: "Leo núi ngắm toàn cảnh.", videoUrl: "https://www.youtube.com/watch?v=jfKfPfyJRdk", checkedIn: false }
+        ];
+        let locations = JSON.parse(localStorage.getItem('halong_trip')) || defaultData;
+
+        function askDeleteLocation(id) { 
+            showAlert("Xóa điểm đến này khỏi lịch trình nhé sếp?", "confirm", () => {
+                locations = locations.filter(l => l.id !== id); renderUI();
+            }); 
+        }
+
+        let map, markersLayer;
+        function toggleMapModal() {
+            const m = document.getElementById('mapModal');
+            m.classList.toggle('active');
+            if(m.classList.contains('active')) {
+                if(!map) {
+                    map = L.map('map').setView([20.9101, 107.0165], 11);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                    markersLayer = L.layerGroup().addTo(map);
+                }
+                setTimeout(() => map.invalidateSize(), 300);
+                drawMapMarkers();
+            }
+        }
+
+        function renderUI() {
+            document.getElementById('destList').innerHTML = '';
+            document.getElementById('diaryList').innerHTML = '';
+            locations.forEach((loc, index) => {
+                const cardHTML = `
+                    <div class="card fade-in-up" style="border-left: 5px solid ${loc.checkedIn ? '#10b981' : '#0ea5e9'}">
+                        <button class="btn-delete" onclick="askDeleteLocation('${loc.id}')">🗑️</button>
+                        <h3 style="margin-top:0"><span style="color:#94a3b8; font-size:14px;">[${index+1}]</span> ${loc.name} ${loc.checkedIn ? '✅' : ''}</h3>
+                        <p style="font-size:14px; color:#666;">🕒 ${loc.time}</p>
+                        <button class="btn btn-primary" onclick="openVideoModal('${loc.id}')">Xem Chi tiết</button>
+                    </div>`;
+                if(loc.checkedIn) document.getElementById('diaryList').innerHTML += cardHTML;
+                else document.getElementById('destList').innerHTML += cardHTML;
+            });
+            document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
+            localStorage.setItem('halong_trip', JSON.stringify(locations));
+            if(map) drawMapMarkers();
+        }
+
+        function drawMapMarkers() {
+            markersLayer.clearLayers();
+            locations.forEach(loc => { L.marker([loc.lat, loc.lng]).addTo(markersLayer).bindPopup(`<b>${loc.name}</b><br>${loc.time}`); });
+        }
+
+        // --- BỘ GIẢI MÃ VIDEO (NÂNG CẤP TIKTOK /PLAYER/V1/) ---
+        function getEmbedCode(url) {
+            if (!url) return "<p style='color:white;'>Không có video</p>";
+            // Xử lý TikTok Fullscreen Player
+            if (url.includes('tiktok.com')) {
+                const ttMatch = url.match(/video\/(\d+)/);
+                return `<iframe src="https://www.tiktok.com/player/v1/${ttMatch ? ttMatch[1] : ''}?autoplay=1" allowfullscreen scrolling="no"></iframe>`;
+            }
+            const ytMatch = url.match(/(?:youtube\.com.*[?&]v=|youtu\.be\/)([^&]+)/);
+            if (ytMatch) return `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1" allowfullscreen scrolling="no"></iframe>`;
+            return `<iframe src="${url}" allowfullscreen scrolling="no"></iframe>`;
+        }
+
+        function openVideoModal(id, rawUrl = null) {
+            const contentBox = document.getElementById('modalContentBox');
+            if(rawUrl) {
+                contentBox.classList.add('video-only-mode');
+                document.getElementById('modalVidContainer').innerHTML = getEmbedCode(rawUrl);
+            } else {
+                contentBox.classList.remove('video-only-mode');
+                const loc = locations.find(l => l.id === id);
+                document.getElementById('modalTitle').innerText = loc.name;
+                document.getElementById('modalTime').innerText = loc.time;
+                document.getElementById('modalDesc').innerText = loc.desc;
+                document.getElementById('modalVidContainer').innerHTML = getEmbedCode(loc.videoUrl);
+                
+                document.getElementById('btnMaps').onclick = () => window.open(`https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`, '_blank');
+                
+                const btnCheck = document.getElementById('btnCheckIn');
+                if (loc.checkedIn) { btnCheck.style.background = '#10b981'; btnCheck.style.color = 'white'; btnCheck.innerText = '✅ Đã Check-in'; } 
+                else { btnCheck.style.background = '#fff'; btnCheck.style.color = '#333'; btnCheck.innerText = 'Đánh dấu Đã Check-in'; btnCheck.onclick = () => { loc.checkedIn = true; renderUI(); openVideoModal(id); }; }
+            }
+            document.getElementById('videoModal').classList.add('active');
+        }
+        function previewVideoBag(url) { openVideoModal(null, url); }
+        function closeVideoModal() { document.getElementById('videoModal').classList.remove('active'); document.getElementById('modalVidContainer').innerHTML = ''; }
+
+        // --- NÃO BỘ CHATBOT KẾT NỐI TÚI ---
+        function toggleChat() { document.getElementById('chatPanel').classList.toggle('active'); }
+        const chatBody = document.getElementById('chatBody'), chatInput = document.getElementById('chatInput');
+        let chatState = "idle", tempLoc = {}, editId = null;
+
+        function msg(txt, sender) { chatBody.innerHTML += `<div class="msg msg-${sender}">${txt}</div>`; chatBody.scrollTop = chatBody.scrollHeight; }
+
+        function processChat() {
+            let text = chatInput.value.trim(); if(!text) return;
+            msg(text, 'user'); chatInput.value = '';
+            let low = text.toLowerCase();
+
+            setTimeout(() => {
+                let matchEdit = low.match(/sửa\s*(\d+)/);
+                if (chatState === "idle" && matchEdit) {
+                    let idx = parseInt(matchEdit[1]) - 1;
+                    if(locations[idx]) {
+                        editId = locations[idx].id;
+                        msg(`🤖 Đang sửa: <b>${locations[idx].name}</b>. Gõ mục cần sửa (<b>Tên / Tọa độ / Giờ / Video</b>) hoặc <b>Xong</b>.`, 'bot');
+                        chatState = "edit_pick_field";
+                    } else msg("🤖 Số không đúng!", 'bot');
+                    return;
+                }
+
+                if (chatState === "edit_pick_field") {
+                    if (low === 'xong') { chatState = "idle"; editId = null; msg("🤖 Đã lưu hoàn tất!", 'bot'); } 
+                    else if (low.includes('tên')) { chatState = "edit_val_name"; msg("🤖 Sếp nhập Tên mới:", 'bot'); } 
+                    else if (low.includes('tọa độ') || low.includes('map')) { chatState = "edit_val_coord"; msg("🤖 Dán Vĩ độ, Kinh độ (VD: 20.95, 106.99):", 'bot'); } 
+                    else if (low.includes('giờ') || low.includes('ngày') || low.includes('thời gian')) { chatState = "edit_val_time"; msg("🤖 Nhập Lịch mới (VD: Ngày 2 - 08:00):", 'bot'); } 
+                    else if (low.includes('video') || low.includes('link')) { chatState = "edit_val_video"; msg("🤖 Dán Link hoặc gõ 'Túi số 1':", 'bot'); } 
+                    else msg("🤖 Em chưa hiểu. Sếp gõ (<b>Tên/Tọa độ/Giờ/Video</b>) hoặc <b>Xong</b> nhé.", 'bot');
+                    return;
+                }
+
+                if (chatState.startsWith("edit_val_")) {
+                    let target = locations.find(l => l.id === editId);
+                    if(chatState === "edit_val_name") target.name = text;
+                    if(chatState === "edit_val_time") target.time = text;
+                    if(chatState === "edit_val_video") {
+                        if(low.includes('túi số')) { 
+                            let idx = parseInt(low.replace(/[^0-9]/g, '')) - 1; 
+                            target.videoUrl = (videoBag[idx] && videoBag[idx].url) ? videoBag[idx].url : text; 
+                        } else { target.videoUrl = text; }
+                    }
+                    if(chatState === "edit_val_coord") {
+                        let coords = text.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+                        if(coords) { target.lat = parseFloat(coords[1]); target.lng = parseFloat(coords[2]); }
+                        else { msg("🤖 Tọa độ chưa chuẩn. Cần dấu phẩy (VD: 20.95, 106.99)", 'bot'); return; }
+                    }
+                    renderUI(); msg(`🤖 Cập nhật xong! Gõ tiếp mục cần sửa hoặc <b>Xong</b>.`, 'bot'); chatState = "edit_pick_field"; return;
+                }
+
+                if (chatState === "idle" && (low.includes('thêm') || low.includes('tạo'))) { msg("🤖 Tên địa điểm mới là gì?", 'bot'); chatState = "add_name"; } 
+                else if (chatState === "add_name") { tempLoc.name = text; msg(`🤖 Tên: <b>${text}</b>. Dự kiến Ngày/Giờ nào?`, 'bot'); chatState = "add_time"; }
+                else if (chatState === "add_time") { tempLoc.time = text; msg(`🤖 Xin Tọa độ (Vĩ độ, Kinh độ) nhé:`, 'bot'); chatState = "add_coord"; }
+                else if (chatState === "add_coord") {
+                    let coords = text.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+                    if (coords) { tempLoc.lat = parseFloat(coords[1]); tempLoc.lng = parseFloat(coords[2]); msg("🤖 Dán Link Video hoặc gõ <b>'Túi số 1'</b>:", 'bot'); chatState = "add_video"; } 
+                    else msg("🤖 Chưa đúng chuẩn số. VD: 20.95, 106.99", 'bot');
+                } 
+                else if (chatState === "add_video") {
+                    if (low.includes('túi số')) { 
+                        let idx = parseInt(low.replace(/[^0-9]/g, '')) - 1; 
+                        tempLoc.videoUrl = (videoBag[idx] && videoBag[idx].url) ? videoBag[idx].url : "https://youtu.be/jfKfPfyJRdk"; 
+                    } else { tempLoc.videoUrl = text; }
+                    tempLoc.id = Date.now().toString(); tempLoc.desc = "Thêm bởi AI Bot."; tempLoc.checkedIn = false;
+                    locations.push(tempLoc); renderUI(); msg(`🤖 Đã tạo xong <b>${tempLoc.name}</b>!`, 'bot'); chatState = "idle"; tempLoc = {};
+                }
+                else if (chatState === "idle") msg("🤖 Gõ <b>'Thêm điểm'</b> hoặc <b>'Sửa [số]'</b> nhé!", 'bot');
+            }, 400);
+        }
+
+        renderUI();
+    </script>
+</body>
+</html>
