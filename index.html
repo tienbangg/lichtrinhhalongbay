@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hành Trình Hạ Long 2026 - V10 Apple Standard</title>
+    <title>Hành Trình Hạ Long 2026 - V10.1</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
     
     <style>
         :root {
-            /* Tông màu tinh tế chuẩn Apple */
-            --primary: #007aff;
+            var(--primary): #007aff;
             --success: #34c759;
             --danger: #ff3b30;
             --warning: #ff9500;
@@ -29,6 +28,21 @@
             background-color: #000; background-attachment: fixed; background-position: center; background-size: cover;
             transition: background-image 0.8s ease-in-out;
             -webkit-font-smoothing: antialiased;
+            
+            /* 🔒 BẢN VÁ: KHÓA ZOOM VÀ KHÓA COPY (SAO CHÉP CHỮ) TOÀN TRANG */
+            touch-action: pan-y; /* Chống dùng 2 ngón tay zoom */
+            user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; 
+            -webkit-touch-callout: none; /* Chống hiện menu copy trên iOS */
+        }
+
+        /* Ngoại trừ các ô nhập chữ thì cho phép bôi đen, chọn văn bản */
+        input, textarea {
+            user-select: auto; -webkit-user-select: auto; -moz-user-select: auto; -ms-user-select: auto;
+        }
+
+        /* 🔒 BẢN VÁ: KHÓA NỀN KHI MỞ MODAL ĐỂ KHÔNG BỊ TRƯỢT MÀN HÌNH ĐIỆN THOẠI */
+        body.modal-open {
+            overflow: hidden !important; 
         }
 
         /* 🍎 APPLE GLASSMORPHISM */
@@ -49,13 +63,12 @@
         .hero h1 { font-size: 5rem; margin-bottom: 5px; font-weight: 800; letter-spacing: -2px; text-shadow: 0 10px 20px rgba(0,0,0,0.3); }
         .hero p { font-size: 1.6rem; margin-bottom: 35px; font-weight: 400; text-shadow: 0 4px 10px rgba(0,0,0,0.3); color: #e5e5ea; }
         
-        /* 🍎 INTERACTIVE BUTTONS */
         .btn { 
             padding: 16px 32px; border-radius: 999px; font-weight: 600; font-size: 17px; border: none; cursor: pointer; 
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); text-decoration: none; display: inline-block;
         }
-        .btn:active { transform: scale(0.92); } /* Nảy chuẩn Apple */
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 8px 15px rgba(0, 122, 255, 0.3); }
+        .btn:active { transform: scale(0.92); } 
+        .btn-primary { background: #007aff; color: white; box-shadow: 0 8px 15px rgba(0, 122, 255, 0.3); }
         .btn-glass { background: var(--glass); color: white; border: 1px solid var(--glass-border); backdrop-filter: blur(15px); }
 
         /* SECTIONS & CARDS */
@@ -105,7 +118,7 @@
         .video-player { flex: 1.5; background: #000; padding: 0; margin: 0; display: flex; justify-content: center; align-items: center; overflow: hidden; }
         .video-player iframe { width: 100%; height: 100%; border: none; pointer-events: auto; }
         .video-info { flex: 1; padding: 40px; overflow-y: auto; background: #1c1c1e; color: #fff;}
-        .video-info::-webkit-scrollbar { display: none; } /* Ẩn thanh cuộn */
+        .video-info::-webkit-scrollbar { display: none; } 
         
         .video-only-mode .video-info { display: none; }
         .video-only-mode .video-player { flex: 1; }
@@ -115,7 +128,7 @@
             .video-modal-content {
                 width: 100vw; height: 100vh; border-radius: 0; flex-direction: column; transform: translateY(100%);
             }
-            .video-modal.active .video-modal-content { transform: translateY(0); } /* Hiệu ứng trượt từ dưới lên */
+            .video-modal.active .video-modal-content { transform: translateY(0); } 
             
             .video-player {
                 width: 100%; height: 100vh; aspect-ratio: auto; background: #000; position: relative;
@@ -124,9 +137,9 @@
                 position: absolute; bottom: 0; left: 0; width: 100%;
                 background: linear-gradient(transparent, rgba(0,0,0,0.95) 15%, #000000);
                 color: white; z-index: 20; padding: 24px; padding-top: 50px; max-height: 55vh; padding-bottom: 90px;
+                -webkit-overflow-scrolling: touch; /* Trượt mượt trên iOS */
             }
             
-            /* Nút đóng tròn mờ chuẩn iOS */
             .video-modal-content .close-btn-red {
                 position: absolute; top: 15px; left: 15px; z-index: 30;
                 background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -152,7 +165,7 @@
         .chat-input { display: flex; padding: 15px; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.05); }
         .chat-input input { flex: 1; padding: 12px 16px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; outline: none; color: white; font-size: 15px;}
         .chat-input input::placeholder { color: rgba(255,255,255,0.5); }
-        .chat-input button { background: var(--primary); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; margin-left: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s;}
+        .chat-input button { background: #007aff; color: white; border: none; width: 44px; height: 44px; border-radius: 50%; margin-left: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s;}
         .chat-input button:active { transform: scale(0.85); }
         .btn-send-cute { background: var(--cute-pink-1) !important; font-size: 18px;}
 
@@ -189,7 +202,7 @@
         .alert-btn { flex: 1; padding: 14px; border-radius: 14px; font-weight: 600; font-size: 16px; cursor: pointer; border: none; transition: 0.2s;}
         .alert-btn:active { transform: scale(0.95); }
         .btn-cancel { background: rgba(255,255,255,0.1); color: white; display: none; }
-        .btn-confirm { background: var(--primary); color: white; }
+        .btn-confirm { background: #007aff; color: white; }
 
         #cropModal { background: rgba(0,0,0,0.95); z-index: 10001; }
         .crop-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; overflow: hidden; }
@@ -250,7 +263,7 @@
         <div class="modal-header" style="background: #1c1c1e; color: white; border-bottom: none;">
             <h3 style="margin:0; font-size: 20px;">Cắt ảnh nền</h3>
             <div>
-                <button class="btn btn-glass" style="padding: 10px 20px; font-size:14px; border-radius:999px;" onclick="document.getElementById('cropModal').classList.remove('active'); document.getElementById('bgUpload').value='';">Hủy</button>
+                <button class="btn btn-glass" style="padding: 10px 20px; font-size:14px; border-radius:999px;" onclick="document.getElementById('cropModal').classList.remove('active'); document.getElementById('bgUpload').value=''; document.body.classList.remove('modal-open');">Hủy</button>
                 <button class="btn btn-primary" style="padding: 10px 20px; font-size:14px; border-radius:999px; margin-left:10px;" onclick="saveCropBg()">Lưu</button>
             </div>
         </div>
@@ -314,7 +327,7 @@
             } else {
                 document.getElementById('alertIcon').innerText = "✅";
                 cancelBtn.style.display = 'none';
-                confirmBtn.style.background = "var(--primary)";
+                confirmBtn.style.background = "#007aff";
             }
 
             confirmBtn.onclick = () => {
@@ -338,6 +351,7 @@
             if(!file) return;
             let reader = new FileReader();
             reader.onload = function(ev){
+                document.body.classList.add('modal-open'); // KHÓA CUỘN NỀN
                 cropModal.classList.add("active");
                 cropImage.src = ev.target.result;
                 setTimeout(() => {
@@ -355,21 +369,20 @@
             document.body.style.backgroundImage = `url(${img})`;
             localStorage.setItem("halong_bg", img);
             cropModal.classList.remove("active");
+            document.body.classList.remove('modal-open');
             bgUpload.value = ''; 
         }
 
         const observer = new IntersectionObserver((e) => { e.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('visible'); else entry.target.classList.remove('visible'); }); }, { threshold: 0.1 });
         
-        // --- 🔍 THUẬT TOÁN PHÂN GIẢI LINK TIKTOK (CORS PROXY RESOLVER) ---
+        // --- 🔍 THUẬT TOÁN PHÂN GIẢI LINK TIKTOK ---
         async function resolveTikTokShortLink(shortUrl) {
             try {
-                // Dùng trạm trung chuyển api.allorigins.win để vượt tường CORS
                 const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(shortUrl)}`);
                 if (!response.ok) return null;
                 const data = await response.json();
                 const html = data.contents;
                 
-                // Lấy link gốc từ thẻ canonical hoặc thẻ meta
                 const canonicalMatch = html.match(/<link\s+rel="canonical"\s+href="([^"]+)"/i);
                 if (canonicalMatch && canonicalMatch[1]) return canonicalMatch[1];
                 
@@ -379,7 +392,7 @@
             return null;
         }
 
-        // --- TÚI VIDEO NÂNG CẤP ĐẶT TÊN & PHÂN GIẢI ---
+        // --- TÚI VIDEO ---
         let videoBag = JSON.parse(localStorage.getItem('halong_bag')) || [];
         videoBag = videoBag.map(item => typeof item === 'string' ? {name: 'Video Lịch Trình', url: item} : item);
 
@@ -409,9 +422,8 @@
             if(!nameVal) nameVal = `Video ${videoBag.length + 1}`;
             if(urlVal) { 
                 let finalUrl = urlVal;
-                // Nếu dán link ngắn, phân giải ngay lập tức
                 if (urlVal.includes('vt.tiktok') || urlVal.includes('vm.tiktok')) {
-                    addBtn.innerText = "⏳"; // Hiển thị đang tải
+                    addBtn.innerText = "⏳"; 
                     let resolved = await resolveTikTokShortLink(urlVal);
                     if (resolved) finalUrl = resolved;
                     addBtn.innerText = "+";
@@ -451,6 +463,7 @@
             const m = document.getElementById('mapModal');
             m.classList.toggle('active');
             if(m.classList.contains('active')) {
+                document.body.classList.add('modal-open'); // KHÓA CUỘN NỀN MOBILE
                 if(!map) {
                     map = L.map('map').setView([20.9101, 107.0165], 11);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
@@ -458,6 +471,8 @@
                 }
                 setTimeout(() => map.invalidateSize(), 300);
                 drawMapMarkers();
+            } else {
+                document.body.classList.remove('modal-open'); // MỞ CUỘN LẠI
             }
         }
 
@@ -490,14 +505,13 @@
             if (!url) return "<p style='color:white; text-align:center; padding-top:20px;'>Không có video</p>";
             
             if (url.includes('tiktok.com')) {
-                // Nếu lọt link ngắn vào đây mà chưa được phân giải
                 if (url.includes('vt.tiktok') || url.includes('vm.tiktok')) {
                     return `
                     <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; padding:20px; text-align:center; background:#111; width:100%;">
                         <span style="font-size:40px; margin-bottom:10px;">⚠️</span>
-                        <h3 style="color:#ff9500; margin:0 0 10px 0;">Link Chưa Phân Giải</h3>
-                        <p style="color:#e2e8f0; font-size:14px; line-height:1.5;">Vui lòng mở trực tiếp ứng dụng TikTok để xem.</p>
-                        <a href="${url}" target="_blank" style="margin-top: 15px; padding: 12px 24px; background: #ff2d55; color: white; text-decoration: none; border-radius: 999px; font-weight: bold;">Mở Ứng Dụng</a>
+                        <h3 style="color:#ff9500; margin:0 0 10px 0;">Đang Bóc Tách Link...</h3>
+                        <p style="color:#e2e8f0; font-size:14px; line-height:1.5;">Vui lòng đợi Bot Mèo giải mã link Tiktok này nhé!</p>
+                        <a href="${url}" target="_blank" style="margin-top: 15px; padding: 12px 24px; background: #ff2d55; color: white; text-decoration: none; border-radius: 999px; font-weight: bold;">Mở Ứng Dụng Trong Lúc Chờ</a>
                     </div>`;
                 }
                 const ttMatch = url.match(/video\/(\d+)/);
@@ -510,6 +524,8 @@
         }
 
         function openVideoModal(id, rawUrl = null) {
+            document.body.classList.add('modal-open'); // KHÓA CUỘN NỀN MOBILE
+
             const contentBox = document.getElementById('modalContentBox');
             if(rawUrl) {
                 contentBox.classList.add('video-only-mode');
@@ -531,14 +547,17 @@
             document.getElementById('videoModal').classList.add('active');
         }
         function previewVideoBag(url) { openVideoModal(null, url); }
-        function closeVideoModal() { document.getElementById('videoModal').classList.remove('active'); document.getElementById('modalVidContainer').innerHTML = ''; }
+        function closeVideoModal() { 
+            document.getElementById('videoModal').classList.remove('active'); 
+            document.getElementById('modalVidContainer').innerHTML = ''; 
+            document.body.classList.remove('modal-open'); // MỞ CUỘN LẠI
+        }
 
-        // --- KHỐI NÃO CHATBOT MÈO TRỢ LÝ (AI FLEXIBLE & THÔNG MINH) ---
+        // --- KHỐI NÃO CHATBOT MÈO TRỢ LÝ (BỔ SUNG TỰ ĐỘNG BÓC TÁCH TIKTOK) ---
         function toggleChat() { document.getElementById('chatPanel').classList.toggle('active'); }
         const chatBody = document.getElementById('chatBody'), chatInput = document.getElementById('chatInput');
         let chatState = "idle", tempLoc = {}, editId = null;
 
-        // Bộ từ khóa nhận diện người dùng muốn "bỏ qua"
         const skipKeywords = ['không', 'ko', 'bỏ qua', 'chưa có', 'không có', 'skip'];
         function isSkip(txt) { return skipKeywords.some(w => txt.toLowerCase().includes(w)); }
 
@@ -547,19 +566,40 @@
             chatBody.scrollTop = chatBody.scrollHeight; 
         }
 
+        // HÀM XỬ LÝ LINK VIDEO TRONG LÚC CHAT CỦA MÈO
+        async function processVideoUrlInput(text, objToUpdate) {
+            let finalUrl = text;
+            if (text.includes('vt.tiktok') || text.includes('vm.tiktok')) {
+                msg("🐱 Đang bóc tách link TikTok, sếp đợi xíu nha ⏳...", 'bot');
+                let resolvedUrl = await resolveTikTokShortLink(text);
+                if (resolvedUrl) {
+                    finalUrl = resolvedUrl;
+                    // BẢN VÁ 1: Tự động ném vào túi video
+                    videoBag.push({ name: 'TikTok Bóc Tách Tự Động', url: finalUrl });
+                    localStorage.setItem('halong_bag', JSON.stringify(videoBag));
+                    renderBag();
+                    msg("🐱 Đã bóc tách thành công và tự động lưu vào 🎒 Túi Video luôn rồi ạ!", 'bot');
+                } else {
+                    msg("🐱 Link TikTok này khó mở quá, Mèo lưu tạm link gốc nhé!", 'bot');
+                }
+            } else if (text.toLowerCase().includes('túi số')) {
+                let idx = parseInt(text.replace(/[^0-9]/g, '')) - 1;
+                finalUrl = (videoBag[idx] && videoBag[idx].url) ? videoBag[idx].url : text;
+            }
+            objToUpdate.videoUrl = finalUrl;
+        }
+
         async function processChat() {
             let text = chatInput.value.trim(); if(!text) return;
             msg(text, 'user'); chatInput.value = '';
             let low = text.toLowerCase();
 
-            // Hiệu ứng Mèo đang gõ chữ
             let typingId = "typing-" + Date.now();
-            chatBody.innerHTML += `<div id="${typingId}" class="msg msg-bot typing-indicator">Mèo đang xử lý...</div>`;
+            chatBody.innerHTML += `<div id="${typingId}" class="msg msg-bot typing-indicator">Mèo đang gõ...</div>`;
             chatBody.scrollTop = chatBody.scrollHeight;
             
-            // Giả lập độ trễ AI suy nghĩ
             await new Promise(r => setTimeout(r, 400));
-            document.getElementById(typingId).remove();
+            if(document.getElementById(typingId)) document.getElementById(typingId).remove();
 
             let matchEdit = low.match(/sửa\s*(\d+)/);
             if (chatState === "idle" && matchEdit) {
@@ -577,7 +617,7 @@
                 else if (low.includes('tên')) { chatState = "edit_val_name"; msg("🐱 Sếp nhập Tên mới cho điểm đến nha (Hoặc gõ 'bỏ qua'):", 'bot'); } 
                 else if (low.includes('tọa độ') || low.includes('map')) { chatState = "edit_val_coord"; msg("🐱 Sếp dán Vĩ độ, Kinh độ (VD: 20.95, 106.99) vào đây:", 'bot'); } 
                 else if (low.includes('giờ') || low.includes('ngày') || low.includes('thời gian')) { chatState = "edit_val_time"; msg("🐱 Sếp nhập Lịch trình mới (VD: Ngày 2 - 08:00) nào:", 'bot'); } 
-                else if (low.includes('video') || low.includes('link')) { chatState = "edit_val_video"; msg("🐱 Sếp dán Link Video hoặc gõ 'Túi số 1' nhé:", 'bot'); } 
+                else if (low.includes('video') || low.includes('link')) { chatState = "edit_val_video"; msg("🐱 Sếp dán Link Video (TikTok/Youtube) hoặc gõ 'Túi số 1' nhé:", 'bot'); } 
                 else msg("🐱 Mèo chưa hiểu. Sếp gõ (<b>Tên/Tọa độ/Giờ/Video</b>) hoặc gõ <b>Xong</b> nha.", 'bot');
                 return;
             }
@@ -590,15 +630,7 @@
                 if(chatState === "edit_val_time" && !skip) target.time = text;
                 
                 if(chatState === "edit_val_video" && !skip) {
-                    if(low.includes('túi số')) { 
-                        let idx = parseInt(low.replace(/[^0-9]/g, '')) - 1; 
-                        target.videoUrl = (videoBag[idx] && videoBag[idx].url) ? videoBag[idx].url : text; 
-                    } 
-                    else if (low.includes('vt.tiktok') || low.includes('vm.tiktok')) {
-                        let resolvedUrl = await resolveTikTokShortLink(text);
-                        target.videoUrl = resolvedUrl ? resolvedUrl : text;
-                    }
-                    else { target.videoUrl = text; }
+                    await processVideoUrlInput(text, target);
                 }
                 
                 if(chatState === "edit_val_coord" && !skip) {
@@ -611,7 +643,7 @@
                 chatState = "edit_pick_field"; return;
             }
 
-            // --- LUỒNG THÊM ĐIỂM LINH HOẠT ---
+            // --- LUỒNG THÊM ĐIỂM ---
             if (chatState === "idle" && (low.includes('thêm') || low.includes('tạo'))) { msg("🐱 Tên địa điểm mới là gì vậy sếp?", 'bot'); chatState = "add_name"; } 
             
             else if (chatState === "add_name") { 
@@ -626,45 +658,29 @@
             
             else if (chatState === "add_coord") {
                 if (isSkip(text)) {
-                    tempLoc.lat = 20.9101; tempLoc.lng = 107.0165; // Mặc định Hạ Long
-                    msg("🐱 Mèo đã ghim tạm ở trung tâm Hạ Long. Dán Link Video hoặc gõ <b>'Túi số 1'</b> (Gõ <b>bỏ qua</b> nếu chưa có):", 'bot'); chatState = "add_video";
+                    tempLoc.lat = 20.9101; tempLoc.lng = 107.0165; 
+                    msg("🐱 Mèo đã ghim tạm ở trung tâm Hạ Long. Dán Link Video TikTok/YouTube (Hoặc gõ <b>bỏ qua</b>):", 'bot'); chatState = "add_video";
                 } else {
                     let coords = text.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
                     if (coords) { 
                         tempLoc.lat = parseFloat(coords[1]); tempLoc.lng = parseFloat(coords[2]); 
-                        msg("🐱 Dán Link Video hoặc gõ <b>'Túi số 1'</b> vào đây nha (Gõ <b>không</b> để bỏ qua):", 'bot'); chatState = "add_video"; 
+                        msg("🐱 Dán Link Video TikTok/YouTube vào đây nha (Gõ <b>không</b> để bỏ qua):", 'bot'); chatState = "add_video"; 
                     } 
                     else msg("🐱 Mèo chưa nhận diện được số. VD đúng là: 20.95, 106.99 (Hoặc gõ 'bỏ qua' nha)", 'bot');
                 }
             } 
             
             else if (chatState === "add_video") {
-                let finalizeAdd = (url) => {
-                    tempLoc.videoUrl = url;
-                    tempLoc.id = Date.now().toString(); tempLoc.desc = "Thêm bởi Mèo Trợ Lý."; tempLoc.checkedIn = false;
-                    locations.push(tempLoc); renderUI(); 
-                    msg(`🐱 Xong rồi! Đã tạo <b>${tempLoc.name}</b> thành công!`, 'bot'); 
-                    chatState = "idle"; tempLoc = {};
-                };
-
                 if (isSkip(text)) {
-                    finalizeAdd("https://youtu.be/jfKfPfyJRdk");
-                } 
-                else if (low.includes('túi số')) { 
-                    let idx = parseInt(low.replace(/[^0-9]/g, '')) - 1; 
-                    let url = (videoBag[idx] && videoBag[idx].url) ? videoBag[idx].url : "https://youtu.be/jfKfPfyJRdk"; 
-                    finalizeAdd(url);
-                } 
-                else if (low.includes('vt.tiktok') || low.includes('vm.tiktok')) {
-                    let resolvedUrl = await resolveTikTokShortLink(text);
-                    if (resolvedUrl) {
-                        finalizeAdd(resolvedUrl);
-                    } else {
-                        msg("🐱 Link TikTok này khó mở quá, Mèo lưu tạm link gốc nhé!", 'bot');
-                        finalizeAdd(text);
-                    }
+                    tempLoc.videoUrl = "https://youtu.be/jfKfPfyJRdk";
+                } else {
+                    await processVideoUrlInput(text, tempLoc);
                 }
-                else { finalizeAdd(text); }
+                
+                tempLoc.id = Date.now().toString(); tempLoc.desc = "Thêm bởi Mèo Trợ Lý."; tempLoc.checkedIn = false;
+                locations.push(tempLoc); renderUI(); 
+                msg(`🐱 Xong rồi! Đã tạo <b>${tempLoc.name}</b> thành công!`, 'bot'); 
+                chatState = "idle"; tempLoc = {};
             }
             else if (chatState === "idle") msg("🐱 Mèo đây! Sếp gõ <b>'Thêm điểm'</b> hoặc <b>'Sửa [số]'</b> để em hỗ trợ nhé!", 'bot');
         }
