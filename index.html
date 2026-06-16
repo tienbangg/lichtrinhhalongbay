@@ -84,6 +84,21 @@
         .form-actions .btn-cancel { background: #3a3a3c; color: white;}
         .form-actions .btn-cancel:active { background: #2c2c2e; }
 
+        /* BẢNG THÔNG BÁO CUSTOM TÙY CHỈNH (THAY CHO ALERT/CONFIRM MẶC ĐỊNH) */
+        .custom-alert-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px); z-index: 10000; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease;
+        }
+        .custom-alert-overlay.active { display: flex; opacity: 1; }
+        .custom-alert-card { background: rgba(28,28,30,0.9); backdrop-filter: blur(25px); border-radius: 24px; padding: 30px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); }
+        .alert-icon { font-size: 45px; margin-bottom: 10px; }
+        .alert-message { font-size: 17px; font-weight: 500; color: white; margin-bottom: 25px; line-height: 1.4; word-wrap: break-word; }
+        .alert-btn-group { display: flex; gap: 15px; justify-content: center; }
+        .alert-btn { flex: 1; padding: 14px; border-radius: 14px; font-weight: 600; font-size: 16px; cursor: pointer; border: none; transition: 0.2s; }
+        .alert-btn:active { transform: scale(0.95); }
+        .btn-cancel { background: rgba(255,255,255,0.1); color: white; display: none; }
+        .btn-confirm { background: var(--primary); color: white; }
+
         /* TÚI VIDEO SIDE PANEL */
         .side-panel {
             position: fixed; bottom: 100px; right: 30px; width: 360px; height: 450px; background: rgba(28,28,30,0.9); backdrop-filter: blur(25px); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
@@ -123,7 +138,7 @@
             .video-info { padding: 25px; }
         }
 
-        /* ALERT CROPPER & HIỆU ỨNG PLAY TIKTOK */
+        /* CROPPER & HIỆU ỨNG TIKTOK */
         .crop-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; overflow: hidden; }
         .crop-container img { max-width: 100%; max-height: 100%; }
 
@@ -141,15 +156,14 @@
 
     <div class="hero">
         <div class="hero-content">
-            <h1 class="fade-in-up">Khám Phá Hạ Long</h1>
-            <p class="fade-in-up" style="transition-delay: 0.1s;">Tự do Quản lý Lịch trình của Bạn</p>
+            <h1 class="fade-in-up">HẠ LONG CITY</h1>
+            <p class="fade-in-up" style="transition-delay: 0.1s;">Quản lý Lịch trình của chúng ta</p>
             <div class="fade-in-up" style="transition-delay: 0.2s;">
                 <a href="#destinations" class="btn btn-primary">Xem Lịch Trình</a>
             </div>
         </div>
     </div>
 
-    <!-- NÚT CÔNG CỤ -->
     <input type="file" id="bgUpload" accept="image/*" style="display:none">
     <div class="floating-btn bg-btn" onclick="document.getElementById('bgUpload').click()">🖼️ Đổi Nền</div>
     <div class="floating-btn sync-btn" id="syncStatus" onclick="fetchFromSheets()">☁️ Đồng Bộ</div>
@@ -158,7 +172,6 @@
     
     <div class="floating-btn add-btn" onclick="openAddModal()">➕</div>
 
-    <!-- TÚI VIDEO SIDE PANEL -->
     <div class="side-panel" id="bagPanel">
         <div class="panel-header">🎒 Túi Video Lưu Trữ</div>
         <div class="panel-body" id="bagList"></div>
@@ -171,7 +184,6 @@
         </div>
     </div>
 
-    <!-- MODAL THÊM / SỬA ĐỊA ĐIỂM -->
     <div class="full-modal" id="addEditModal">
         <div class="form-container">
             <h2 id="modalFormTitle">Thêm Điểm Đến</h2>
@@ -210,7 +222,17 @@
         </div>
     </div>
 
-    <!-- CROP NỀN -->
+    <div class="custom-alert-overlay" id="customAlertOverlay">
+        <div class="custom-alert-card">
+            <div class="alert-icon" id="alertIcon">⚠️</div>
+            <div class="alert-message" id="alertMessage">Thông báo</div>
+            <div class="alert-btn-group">
+                <button class="alert-btn btn-cancel" id="alertCancelBtn" onclick="closeAlert()">Hủy</button>
+                <button class="alert-btn btn-confirm" id="alertConfirmBtn">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
     <div class="full-modal" id="cropModal" style="background: rgba(0,0,0,0.95); z-index: 10001;">
         <div style="padding: 20px; display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box; background: #1c1c1e; color: white;">
             <h3 style="margin:0;">Cắt ảnh nền</h3>
@@ -222,7 +244,6 @@
         <div class="crop-container"><img id="cropImage"></div>
     </div>
 
-    <!-- DANH SÁCH -->
     <section id="destinations" class="section">
         <h2 class="fade-in-up">📍 Lịch Trình (Chờ đi)</h2>
         <div class="grid" id="destList"></div>
@@ -233,7 +254,6 @@
         <div class="grid" id="diaryList"></div>
     </section>
 
-    <!-- MODAL XEM VIDEO -->
     <div class="full-modal" id="videoModal">
         <div class="video-modal-content" id="modalContentBox" ontouchmove="event.stopPropagation()">
             <button class="close-btn-red" onclick="closeVideoModal()">✕</button>
@@ -256,6 +276,36 @@
 
         let locations = [];
         let videoBag = [];
+
+        // HỆ THỐNG CUSTOM ALERT / CONFIRM
+        let currentAlertCallback = null;
+        function closeAlert() { document.getElementById('customAlertOverlay').classList.remove('active'); }
+        function showCustomAlert(msg, type = "alert", callback = null) {
+            document.getElementById('alertMessage').innerHTML = msg;
+            const cancelBtn = document.getElementById('alertCancelBtn');
+            const confirmBtn = document.getElementById('alertConfirmBtn');
+            currentAlertCallback = callback;
+            
+            if (type === "confirm") {
+                document.getElementById('alertIcon').innerText = "🗑️";
+                cancelBtn.style.display = 'block';
+                confirmBtn.style.display = 'block';
+                confirmBtn.style.background = "var(--danger)";
+                confirmBtn.innerText = "Xóa";
+            } else {
+                document.getElementById('alertIcon').innerText = "⚠️";
+                cancelBtn.style.display = 'none';
+                confirmBtn.style.display = 'block';
+                confirmBtn.style.background = "var(--primary)";
+                confirmBtn.innerText = "Đã hiểu";
+            }
+
+            confirmBtn.onclick = () => { 
+                closeAlert(); 
+                if (currentAlertCallback) currentAlertCallback(); 
+            };
+            document.getElementById('customAlertOverlay').classList.add('active');
+        }
 
         // HỆ THỐNG ĐỒNG BỘ ÉP LƯU
         function forceSaveToLocal() {
@@ -314,7 +364,7 @@
 
             locations.forEach((loc, index) => {
                 const isChecked = loc.checkedIn;
-                const deleteAction = isChecked ? `toggleCheckIn('${loc.id}', false)` : `deleteLoc('${loc.id}')`;
+                const deleteAction = isChecked ? `toggleCheckIn('${loc.id}', false)` : `askDeleteLoc('${loc.id}')`;
                 const deleteIcon = isChecked ? `↩️` : `✕`;
                 
                 const cardHTML = `
@@ -376,7 +426,7 @@
             const lng = document.getElementById('locLng').value.trim();
             let videoUrl = document.getElementById('locVideo').value.trim();
 
-            if (!name) { alert("Vui lòng nhập Tên địa điểm!"); return; }
+            if (!name) { showCustomAlert("Vui lòng nhập Tên địa điểm!", "alert"); return; }
 
             // Giải mã "Túi số X" nếu có
             if (videoUrl.toLowerCase().includes('túi số')) {
@@ -399,12 +449,14 @@
             forceSaveToLocal(); renderUI(); syncToSheets();
         }
 
-        function deleteLoc(id) {
-            if(confirm("Xóa vĩnh viễn điểm này?")) {
+        // XÓA BẰNG CUSTOM ALERT THAY VÌ CONFIRM
+        function askDeleteLoc(id) {
+            showCustomAlert("Bạn có chắc chắn muốn xóa vĩnh viễn điểm đến này không?", "confirm", () => {
                 locations = locations.filter(l => l.id !== id);
                 forceSaveToLocal(); renderUI(); syncToSheets();
-            }
+            });
         }
+        
         function toggleCheckIn(id, status) {
             let loc = locations.find(l => l.id === id);
             if(loc) { loc.checkedIn = status; forceSaveToLocal(); renderUI(); syncToSheets(); }
@@ -422,7 +474,7 @@
                         <span style="font-weight: 600; color: var(--warning); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">[Túi ${idx + 1}] ${vid.name || 'Video'}</span>
                         <div class="bag-actions">
                             <button style="background:var(--success);" onclick="openVideoModal(null, '${vid.url}', ${idx})">▶</button>
-                            <button style="background:var(--danger);" onclick="if(confirm('Xóa video?')) { videoBag.splice(${idx}, 1); forceSaveToLocal(); renderBag(); syncToSheets(); }">✕</button>
+                            <button style="background:var(--danger);" onclick="askDeleteBagVideo(${idx})">✕</button>
                         </div>
                     </div>`;
             });
@@ -436,10 +488,15 @@
                 forceSaveToLocal(); renderBag(); syncToSheets(); 
             }
         }
+        
+        function askDeleteBagVideo(idx) {
+            showCustomAlert("Bạn có chắc chắn muốn xóa video này khỏi túi?", "confirm", () => {
+                videoBag.splice(idx, 1); 
+                forceSaveToLocal(); renderBag(); syncToSheets(); 
+            });
+        }
 
-        // ==========================================
-        // 🔴 LAZY RESOLVER TRONG MODAL VIDEO (ĐÃ PHỤC HỒI THUẬT TOÁN BÓC TÁCH GỐC)
-        // ==========================================
+        // 🔴 LAZY RESOLVER TRONG MODAL VIDEO
         function getEmbedCode(url, locId = null, bagIdx = null) {
             if (!url) return "<p style='color:white; text-align:center; padding-top:20px;'>Chưa có Video</p>";
             
